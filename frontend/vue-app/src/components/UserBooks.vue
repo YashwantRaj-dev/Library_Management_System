@@ -1,0 +1,196 @@
+<template>
+    <div class="books">
+      <h1>{{ username }}'s Dashboard</h1>
+      <nav class="navbar">
+        <router-link to="/userdashboard">My Books</router-link>
+        <router-link to="/userbooks" class="active">Books</router-link>
+        <router-link to="/userprofile">Profile</router-link>
+        <a @click="logout">Logout</a>
+      </nav>
+      <div class="search-filter">
+        <input 
+          type="text" 
+          :placeholder="`Search by ${searchType}`" 
+          v-model="searchQuery"
+        >
+        <button @click="filterBooks">Filter</button>
+        <div class="dropdown">
+          <button class="dropbtn">Search by</button>
+          <div class="dropdown-content">
+            <a @click="setSearchType('Book Title')">Book Title</a>
+            <a @click="setSearchType('Author\'s name')">Author's name</a>
+            <a @click="setSearchType('Section/Genre')">Section/Genre</a>
+            <a @click="setSearchType('Rating')">Rating</a>
+          </div>
+        </div>
+      </div>
+      <div v-for="book in filteredBooks" :key="book.id" class="book-item">
+        <span>{{ book.title }} | {{ book.author }} | {{ book.section }}</span>
+        <button @click="requestBook(book)">Request</button>
+      </div>
+    </div>
+  </template>
+  
+  <script>
+  export default {
+    name: 'UserBooks',
+    data() {
+      return {
+        username: '',
+        searchQuery: '',
+        searchType: 'Book Title',
+        books: []  // Sample data, replace with API call
+      };
+    },
+    computed: {
+      filteredBooks() {
+        return this.filterBooks(this.books);
+      }
+    },
+    methods: {
+      logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        this.$router.push('/');
+      },
+      setSearchType(type) {
+        this.searchType = type;
+      },
+      filterBooks(books) {
+        return books.filter(book => {
+          if (this.searchType === 'Book Title') {
+            return book.title.toLowerCase().includes(this.searchQuery.toLowerCase());
+          } else if (this.searchType === 'Author\'s name') {
+            return book.author.toLowerCase().includes(this.searchQuery.toLowerCase());
+          } else if (this.searchType === 'Section/Genre') {
+            return book.section.toLowerCase().includes(this.searchQuery.toLowerCase());
+          } else if (this.searchType === 'Rating') {
+            return book.rating && book.rating.toString().includes(this.searchQuery);
+          }
+          return false;
+        });
+      },
+      requestBook(book) {
+        let days = prompt("Access Duration (Days):");
+        let hours = prompt("Access Duration (Hours):");
+        if (days && hours) {
+          console.log(`Requested book: ${book.title}, Days: ${days}, Hours: ${hours}`);
+        }
+      }
+    },
+    mounted() {
+      this.username = localStorage.getItem('username');
+      // Fetch books from API
+    }
+  };
+  </script>
+  
+  <style>
+  .books {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .books h1 {
+    margin-bottom: 30px;
+    color: #333;
+  }
+  
+  .navbar {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 30px;
+  }
+  
+  .navbar a {
+    color: black;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+  }
+  
+  .navbar a.active {
+    background-color: skyblue;
+    color: white;
+  }
+  
+  .book-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+  }
+  
+  button {
+    border: 1px solid skyblue;
+    border-radius: 5px;
+    color: #fff;
+    background-color: skyblue;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #007bb5;
+  }
+  
+  .search-filter {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  
+  .search-filter input {
+    width: 60%;
+    height: 40px;
+    padding-left: 20px;
+    margin-right: 10px;
+    border: 1px solid skyblue;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
+  
+  .search-filter button {
+    height: 40px;
+  }
+  
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  
+  .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  .dropdown-content a:hover {background-color: #f1f1f1}
+  
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+  
+  .dropdown:hover .dropbtn {
+    background-color: skyblue;
+  }
+  </style>
+  
