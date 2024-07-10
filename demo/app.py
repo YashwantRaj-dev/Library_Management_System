@@ -1,18 +1,20 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, jsonify, request
 from flask_restful import Api, Resource
 from flask_cors import CORS
 import jwt
 from datetime import datetime, timedelta, timezone
 from functools import wraps
+from werkzeug.security import check_password_hash
 from config import app, db
 from models.user import User, Librarian, Admin, Section, Book, BookRequest
 
 app.config['SECRET_KEY'] = 'voYtbdw2WM1eFKai'
 
 # Enable CORS
-# CORS(app)
-# cors = CORS()
-# CORS(app, resources={r"/api/*": {"origins": "*"}})  # Allow access to all origins for all /api/* routes
+cors = CORS()
+with app.app_context():
+    cors.init_app(app)
+
 api = Api(app)
 
 def token_required(func):
@@ -54,11 +56,14 @@ class Login(Resource):
         username = data.get('username')
         password = data.get('password')
         role = data.get('role')
-        
+
         if role == 'user':
             existing_user = User.get_user_by_uname(username)
         elif role == 'librarian':
+            print("inside librarian")
+            print(username,password,role)
             existing_user = Librarian.query.join(User).filter(User.username == username).first()
+            print(existing_user,"sssssss")
         elif role == 'admin':
             existing_user = Admin.query.join(User).filter(User.username == username).first()
         else:
