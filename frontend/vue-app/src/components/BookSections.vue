@@ -1,114 +1,73 @@
 <template>
-    <div class="sections">
-      <h2>Sections</h2>
+  <div>
+    <h1>Book Sections</h1>
+    <div>
+      <input v-model="newSectionName" placeholder="Section Name" />
+      <input v-model="newSectionDescription" placeholder="Section Description" />
       <button @click="addSection">Add Section</button>
-      <div v-for="section in sections" :key="section.id" class="section-item">
-        <span>{{ section.name }} | {{ section.date_created }} | {{ section.description }}</span>
-        <button @click="viewBooks(section)">View Books</button>
-      </div>
-      <div v-if="showAddSection">
-        <h3>Add New Section</h3>
-        <form @submit.prevent="createSection">
-          <input type="text" v-model="newSection.name" placeholder="Section Name" required>
-          <input type="text" v-model="newSection.description" placeholder="Description" required>
-          <button type="submit">Add</button>
-          <button @click="cancelAddSection">Cancel</button>
-        </form>
-      </div>
     </div>
-  </template>
-  
-  <script>
-  import axios from '../axios';
-  
-  export default {
-    name: 'BookSections',
-    data() {
-      return {
-        sections: [],
-        showAddSection: false,
-        newSection: {
-          name: '',
-          description: ''
-        }
-      };
-    },
-    methods: {
-      async fetchSections() {
-        try {
-          const token = localStorage.getItem('token');
-          console.log('Token:', token); // Debug log
-          const response = await axios.get('/sections');
-          console.log('Response:', response); // Debug log
-          // this.sections = response.data.sections;
-        } catch (error) {
-          console.error('Error fetching sections:', error);
-        }
-      },
-      addSection() {
-        this.showAddSection = true;
-      },
-      cancelAddSection() {
-        this.showAddSection = false;
-        this.newSection.name = '';
-        this.newSection.description = '';
-      },
-      async createSection() {
-        try {
-          const token = localStorage.getItem('token');
-          console.log('Token:', token); // Debug log
-          const mockResponse = {
-            data: {
-              section: {
-                id: Date.now(),
-                name: this.newSection.name,
-                description: this.newSection.description,
-                date_created: new Date().toISOString()
-              }
-            }
-          };
-          console.log('Mock response:', mockResponse);
-          this.sections.push(mockResponse.data.section);
-          this.cancelAddSection();
-        } catch (error) {
-          console.error('Error creating section:', error);
-        }
-      },
-      viewBooks(section) {
-        this.$router.push({ name: 'viewBooks', params: { sectionId: section.id } });
+    <div v-if="sections.length">
+      <ul>
+        <li v-for="section in sections" :key="section.id">
+          {{ section.name }}
+          <button @click="viewUploadBooks(section.id)">View/Upload Books</button>
+          <button @click="deleteSection(section.id)">Delete Section</button>
+        </li>
+      </ul>
+    </div>
+    <div v-else>
+      No sections available
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from '../axios';
+
+export default {
+  data() {
+    return {
+      sections: [],
+      newSectionName: '',
+      newSectionDescription: '',
+    };
+  },
+  created() {
+    this.fetchSections();
+  },
+  methods: {
+    async fetchSections() {
+      try {
+        const response = await axios.get('/sections');
+        this.sections = response.data.sections;
+      } catch (error) {
+        console.error(error);
       }
     },
-    mounted() {
-      this.fetchSections();
+    async addSection() {
+      try {
+        await axios.post('/sections', {
+          name: this.newSectionName,
+          description: this.newSectionDescription,
+        });
+        this.newSectionName = '';
+        this.newSectionDescription = '';
+        this.fetchSections();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    async deleteSection(sectionId) {
+      try {
+        await axios.delete(`/sections/${sectionId}`);
+        this.fetchSections();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    viewUploadBooks(sectionId) {
+      this.$router.push(`/section/${sectionId}/books`);
     }
-  };
-  </script>
-  
-  <style>
-  .sections {
-    text-align: center;
   }
-  
-  .section-item {
-    display: flex;
-    justify-content: space-between;
-    margin: 10px 0;
-    padding: 10px;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-  }
-  
-  button {
-    border: 1px solid skyblue;
-    border-radius: 5px;
-    color: #fff;
-    background-color: skyblue;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  button:hover {
-    background-color: #007bb5;
-  }
-  </style>
-  
+};
+</script>

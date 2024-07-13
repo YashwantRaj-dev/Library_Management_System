@@ -26,11 +26,13 @@
         try {
           const response = await axios.post('/login', {
             username: this.username,
-            password: this.password
+            password: this.password,
+            role: 'user'
           });
           // Store the JWT token and username
           localStorage.setItem('token', response.data.token);
           localStorage.setItem('username', this.username);
+          localStorage.setItem('role', response.data.role);
           // Redirect to UserDashboard
           this.$router.push('/userdashboard');
         } catch (error) {

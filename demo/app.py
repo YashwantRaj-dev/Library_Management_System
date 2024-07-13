@@ -56,9 +56,14 @@ class Login(Resource):
         username = data.get('username')
         password = data.get('password')
         role = data.get('role')
-
+        print(username)
+        print(password)
+        print(role)
+        
         if role == 'user':
-            existing_user = User.get_user_by_uname(username)
+            print("stage 1")
+            existing_user = User.query.join(User).filter(User.username == username).first()
+            print("stage 2")
         elif role == 'librarian':
             print("inside librarian")
             print(username,password,role)
@@ -89,9 +94,9 @@ class SectionResource(Resource):
     @token_required
     def get(self):
         try:
-            # sections = Section.query.all()
-            # return jsonify({'sections': [section.__repr__() for section in sections]})
-            return "Hello"
+            sections = Section.query.all()
+            return jsonify({'sections': [section.__repr__() for section in sections]})
+            # return "Hello"
         except Exception as e:
             print("Error fetching sections: ", e)  # Debug log
             return {"status": "error", "message": str(e)}, 500
@@ -102,18 +107,38 @@ class SectionResource(Resource):
         name = data.get('name')
         description = data.get('description')
         date_created = datetime.now(timezone.utc)
-
+        
         try:
             new_section = Section.create_section(name, date_created, description)
             return jsonify({'section': new_section.__repr__()}), 201
         except Exception as e:
             return {"status": "error", "message": str(e)}, 400
+        
+    @token_required
+    def delete(self, section_id):
+        try:
+            section = Section.query.get(section_id)
+            if not section:
+                return {"status": "error", "message": "Section not found"}, 404
+
+            books = Book.query.filter_by(section_id=section.id).all()
+            for book in books:
+                db.session.delete(book)
+
+            db.session.delete(section)
+            db.session.commit()
+            return {"status": "success", "message": "Section and its books deleted successfully"}, 200
+        except Exception as e:
+            return {"status": "error", "message": str(e)}, 500
 
 class BookResource(Resource):
     @token_required
     def get(self, section_id):
-        books = Book.query.filter_by(section_id=section_id).all()
-        return jsonify({'books': [book.__repr__() for book in books]})
+        try:
+            books = Book.query.filter_by(section_id=section_id).all()
+            return jsonify({'books': [book.__repr__() for book in books]})
+        except Exception as e:
+            return {"status": "error", "message": str(e)}, 500
 
     @token_required
     def post(self):
@@ -147,7 +172,7 @@ class RequestResource(Resource):
 api.add_resource(Register, '/api/register')
 api.add_resource(Login, '/api/login')
 api.add_resource(Protected, '/api/protected')
-api.add_resource(SectionResource, '/api/sections') #'/api/sections/<int:section_id>'
+api.add_resource(SectionResource, '/api/sections', '/api/sections/<int:section_id>') 
 api.add_resource(BookResource, '/api/books', '/api/sections/<int:section_id>/books')
 api.add_resource(RequestResource, '/api/requests', '/api/requests/<int:request_id>/<string:action>')
 

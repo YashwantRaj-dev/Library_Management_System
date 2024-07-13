@@ -11,6 +11,7 @@ import LibrarianDashboard from './components/LibrarianDashboard.vue';
 import BookSections from './components/BookSections.vue';
 import LibrarianRequests from './components/LibrarianRequests.vue';
 import LibrarianStats from './components/LibrarianStats.vue';
+import SectionViewBook from './components/SectionViewBook.vue';
 
 const routes = [
   { path: '/', name: 'allhome', component: AllHome },
@@ -24,7 +25,8 @@ const routes = [
   { path: '/librarian-dashboard', name: 'librarian-dashboard', component: LibrarianDashboard, meta: { requiresAuth: true, role: 'librarian' } },
   { path: '/librarian-booksections', name: 'booksections', component: BookSections, meta: { requiresAuth: true, role: 'librarian' } },
   { path: '/librarian-requests', name: 'librarianrequests', component: LibrarianRequests, meta: { requiresAuth: true, role: 'librarian' } },
-  { path: '/librarian-stats', name: 'librarianstats', component: LibrarianStats, meta: { requiresAuth: true, role: 'librarian' } }
+  { path: '/librarian-stats', name: 'librarianstats', component: LibrarianStats, meta: { requiresAuth: true, role: 'librarian' } },
+  { path: '/section/:sectionId/books', name: 'sectionviewbook', component: SectionViewBook, meta: { requiresAuth: true, role: 'librarian' } }
 ];
 
 const router = createRouter({
