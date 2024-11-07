@@ -1,50 +1,61 @@
 <template>
-    <div class="dashboard">
-      <h1>{{ username }}'s Dashboard</h1>
-      <nav class="navbar">
-        <router-link to="/userdashboard" :class="{ active: isActive('/userdashboard') }">My Books</router-link>
-        <router-link to="/userbooks" :class="{ active: isActive('/userbooks') }">Books</router-link>
-        <router-link to="/userprofile">Profile</router-link>
-        <a @click="logout">Logout</a>
-      </nav>
-      <div v-if="section === 'mybooks'">
-        <div class="search-filter">
-          <input 
-            type="text" 
-            :placeholder="`Search by ${searchType}`" 
-            v-model="searchQuery"
-          >
-          <button @click="filterBooks">Filter</button>
-          <div class="dropdown">
-            <button class="dropbtn">Search by</button>
-            <div class="dropdown-content">
-              <a @click="setSearchType('Book Title')">Book Title</a>
-              <a @click="setSearchType('Author\'s name')">Author's name</a>
-              <a @click="setSearchType('Section/Genre')">Section/Genre</a>
-              <a @click="setSearchType('Rating')">Rating</a>
-            </div>
+  <div class="dashboard">
+    <h1>{{ username }}'s Dashboard</h1>
+    <nav class="navbar">
+      <router-link :to="{ path: '/userdashboard', query: { username: username } }" :class="{ active: isActive('/userdashboard') }">My Books</router-link>
+      <router-link :to="{ path: '/userbooks', query: { username: username } }" :class="{ active: isActive('/userbooks') }">Books</router-link>
+      <router-link :to="{ path: '/userprofile', query: { username: username } }" :class="{ active: isActive('/userprofile') }">Profile</router-link>
+      <a @click="logout">Logout</a>
+    </nav>
+    <div v-if="section === 'mybooks'">
+      <div class="search-filter">
+        <input 
+          type="text" 
+          :placeholder="`Search by ${searchType}`" 
+          v-model="searchQuery"
+        >
+        <button @click="filterCombinedBooks">Filter</button>
+        <div class="dropdown">
+          <button class="dropbtn">Search by</button>
+          <div class="dropdown-content">
+            <a @click="setSearchType('Book Title')">Book Title</a>
+            <a @click="setSearchType('Author\'s name')">Author's name</a>
+            <a @click="setSearchType('Section/Genre')">Section/Genre</a>
+            <!-- <a @click="setSearchType('Rating')">Rating</a> -->
           </div>
         </div>
-        <h2>Current Books</h2>
-        <div v-for="book in filteredCurrentBooks" :key="book.id" class="book-item">
+        <button @click="clearSearch">Clear Result</button>
+      </div>
+      <div class="search-results" v-if="searchQuery && filteredBooks.length">
+        <h2>Search Results</h2>
+        <div v-for="book in filteredBooks" :key="book.book_id" class="book-item">
           <span>{{ book.title }} | {{ book.author }} | {{ book.section }}</span>
-          <button @click="confirmReturn(book)">Return</button>
         </div>
-        <h2>Completed Books</h2>
-        <div v-for="book in filteredCompletedBooks" :key="book.id" class="book-item">
-          <span>{{ book.title }} | {{ book.author }} | {{ book.section }}</span>
-          <button @click="viewBook(book)">View</button>
+      </div>
+      <h2>Books to be Completed</h2>
+      <div v-for="book in filteredBooksToBeCompleted" :key="book.book_id" class="book-item">
+        <span>{{ book.title }} | {{ book.author }} | {{ book.section }}</span>
+        <div>
+          <button @click="readBook(book)">Read</button>
+          <button @click="markComplete(book)">Mark Complete</button>
         </div>
-        <h2>Historical Books</h2>
-        <div v-for="book in filteredHistoricalBooks" :key="book.id" class="book-item">
-          <span>{{ book.title }} | {{ book.author }} | {{ book.section }}</span>
-          <button @click="giveFeedback(book)">Feedback</button>
+      </div>
+      <h2>Books Completed</h2>
+      <div v-for="book in filteredBooksCompleted" :key="book.book_id" class="book-item">
+        <span>{{ book.title }} | {{ book.author }} | {{ book.section }}</span>
+        <div>
+          <button @click="readBook(book)">Read</button>
+          <button @click="giveFeedback(book)">Give Feedback</button>
         </div>
       </div>
     </div>
-  </template>
+  </div>
+</template>
+
   
   <script>
+  import axios from '../axios';
+  
   export default {
     name: 'UserDashboard',
     data() {
@@ -53,21 +64,20 @@
         section: 'mybooks',
         searchQuery: '',
         searchType: 'Book Title',
-        currentBooks: [],  // Sample data, replace with API call
-        completedBooks: [],  // Sample data, replace with API call
-        historicalBooks: []  // Sample data, replace with API call
+        booksToBeCompleted: [],  // Sample data, replace with API call
+        booksCompleted: [],  // Sample data, replace with API call,
+        filteredBooks: []
       };
     },
     computed: {
-      filteredCurrentBooks() {
-        return this.filterBooks(this.currentBooks);
+      filteredBooksToBeCompleted() {
+        console.log("BTB",this.booksToBeCompleted);
+        return this.filterBooks(this.booksToBeCompleted);
       },
-      filteredCompletedBooks() {
-        return this.filterBooks(this.completedBooks);
-      },
-      filteredHistoricalBooks() {
-        return this.filterBooks(this.historicalBooks);
-      }
+      filteredBooksCompleted() {
+        console.log("BTB2",this.booksCompleted);
+        return this.filterBooks(this.booksCompleted);
+      } 
     },
     methods: {
       logout() {
@@ -78,39 +88,90 @@
       isActive(route) {
         return this.$route.path === route;
       },
-      confirmReturn(book) {
-        if (confirm('Do you want to return this book?')) {
-          this.currentBooks = this.currentBooks.filter(b => b.id !== book.id);
-          console.log(`Returned book: ${book.title}`);
+      async updateBookRequests() {
+        try {
+          await axios.put('http://localhost:5000/update_book_requests');
+          console.log('Book requests updated successfully');
+        } catch (error) {
+          console.error('Error updating book requests:', error);
         }
       },
-      viewBook(book) {
-        console.log(`Viewing book: ${book.title}`);
+      readBook(book)
+      {
+        console.log(book.book_id);
+        this.$router.push({ path: '/read', query: { bookId: book.book_id, username: this.username } });
       },
+      markComplete(book){
+        axios.post(`http://localhost:5000/books/${book.book_id}/complete`, { username: this.username })
+        .then(() => {
+          alert('Book marked as completed');
+          this.fetchBooks();
+        })
+        .catch(error => console.error(error));
+      }, 
       giveFeedback(book) {
-        console.log(`Giving feedback for book: ${book.title}`);
+        this.$router.push({ path: `/userfeedback`, query: { bookId: book.book_id, username: this.username } });
       },
       setSearchType(type) {
         this.searchType = type;
       },
-      filterBooks(books) {
-        return books.filter(book => {
+      filterCombinedBooks() {
+        if (!this.searchQuery.trim()) {
+          this.filteredBooks = [];  // Clear search results if query is empty
+          return;
+        }
+
+        const combinedBooks = [...this.booksToBeCompleted, ...this.booksCompleted];
+
+        this.filteredBooks = combinedBooks.filter(book => {
           if (this.searchType === 'Book Title') {
-            return book.title.toLowerCase().includes(this.searchQuery.toLowerCase());
+            return book.title && book.title.toLowerCase().includes(this.searchQuery.toLowerCase());
           } else if (this.searchType === 'Author\'s name') {
-            return book.author.toLowerCase().includes(this.searchQuery.toLowerCase());
+            return book.author && book.author.toLowerCase().includes(this.searchQuery.toLowerCase());
           } else if (this.searchType === 'Section/Genre') {
-            return book.section.toLowerCase().includes(this.searchQuery.toLowerCase());
+            return book.section && book.section.toLowerCase().includes(this.searchQuery.toLowerCase());
           } else if (this.searchType === 'Rating') {
             return book.rating && book.rating.toString().includes(this.searchQuery);
           }
           return false;
         });
+      },
+      filterBooks(books) {
+        console.log("Inside", this.booksCompleted); 
+        if (!Array.isArray(books)) return []; 
+        return books.filter(book => {
+      if (this.searchType === 'Book Title') {
+        return book.title && book.title.toLowerCase().includes(this.searchQuery.toLowerCase());
+      } else if (this.searchType === 'Author\'s name') {
+        return book.author && book.author.toLowerCase().includes(this.searchQuery.toLowerCase());
+      } else if (this.searchType === 'Section/Genre') {
+        return book.section && book.section.toLowerCase().includes(this.searchQuery.toLowerCase());
+      } else if (this.searchType === 'Rating') {
+        return book.rating && book.rating.toString().includes(this.searchQuery);
       }
-    },
+      return false;
+        });
+      },
+      fetchBooks() {
+        axios.get(`http://localhost:5000/users/books`, { params: { username: this.username } })
+        .then(response => {
+          this.booksToBeCompleted = response.data.booksToBeCompleted || [];
+          console.log("abc",this.booksToBeCompleted); 
+          this.booksCompleted = response.data.booksCompleted || [];
+          this.filteredBooks = this.filterBooks([...this.booksToBeCompleted, ...this.booksCompleted]);
+        })
+        .catch(error => console.error(error));
+      },
+      clearSearch() {
+        this.searchQuery = '';
+        this.filteredBooks = [];
+        this.fetchBooks();
+        },
+    },  
     mounted() {
       this.username = localStorage.getItem('username');
-      // Fetch books from API
+      this.fetchBooks();
+      this.updateBookRequests(); 
     }
   };
   </script>

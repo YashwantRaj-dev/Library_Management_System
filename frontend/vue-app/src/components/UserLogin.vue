@@ -7,6 +7,12 @@
         <button type="submit">Login</button>
       </form>
       <p>New User? <router-link to="/signup">Go to Sign Up Page</router-link></p>
+      <!-- <div class="separator">
+        <hr>
+        <span>or</span>
+        <hr>
+      </div> -->
+      <p>Go back to <router-link to="/">Home</router-link></p>
     </div>
   </template>
   

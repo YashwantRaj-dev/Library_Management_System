@@ -12,6 +12,12 @@ import BookSections from './components/BookSections.vue';
 import LibrarianRequests from './components/LibrarianRequests.vue';
 import LibrarianStats from './components/LibrarianStats.vue';
 import SectionViewBook from './components/SectionViewBook.vue';
+import ModifySection from './components/ModifySection.vue';
+import ModifyBook from './components/ModifyBook.vue';
+import LibReadBook from './components/LibReadBook.vue';
+import UserReadBooks from './components/UserReadBooks.vue';
+import UserFeedback from './components/UserFeedback.vue';
+import UserReadReview from './components/UserReadReview.vue';
 
 const routes = [
   { path: '/', name: 'allhome', component: AllHome },
@@ -26,7 +32,14 @@ const routes = [
   { path: '/librarian-booksections', name: 'booksections', component: BookSections, meta: { requiresAuth: true, role: 'librarian' } },
   { path: '/librarian-requests', name: 'librarianrequests', component: LibrarianRequests, meta: { requiresAuth: true, role: 'librarian' } },
   { path: '/librarian-stats', name: 'librarianstats', component: LibrarianStats, meta: { requiresAuth: true, role: 'librarian' } },
-  { path: '/section/:sectionId/books', name: 'sectionviewbook', component: SectionViewBook, meta: { requiresAuth: true, role: 'librarian' } }
+  { path: '/section/books', name: 'sectionviewbook', component: SectionViewBook, meta: { requiresAuth: true, role: 'librarian' } },
+  { path: '/modify-section', name: 'modifysection', component: ModifySection, meta: { requiresAuth: true, role: 'librarian' } },
+  { path: '/modify-book', name: 'modifybook', component: ModifyBook, meta: { requiresAuth: true, role: 'librarian' } },
+  { path: '/read-book', name: 'readbook', component: LibReadBook, meta: { requiresAuth: true, role: 'librarian' } },
+  { path: '/read', name: 'UserReadBooks', component: UserReadBooks, meta: { requiresAuth: true } },
+  { path: '/userfeedback', name: 'UserFeedback', component: UserFeedback, meta: { requiresAuth: true } },
+  { path: '/userreadreview', name: 'UserReadReview', component: UserReadReview, meta: { requiresAuth: true }}
+
 ];
 
 const router = createRouter({

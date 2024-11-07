@@ -45,3 +45,27 @@ poetry run flask db upgrade
 ```bash
 poetry run python app.py
 ```
+
+### Step 4: To Start Redis Server on Ubuntu-WSL
+
+```bash
+sudo start redis-server
+```
+
+### Step 5: To Check Redis Server is running
+
+```bash
+redis-cli ping
+```
+
+### Step 6: To Start Celery Worker
+
+```bash
+celery -A task worker --loglevel=info -P eventlet
+```
+
+### Step 5: To Start Celery beat
+
+```bash
+celery -A task beat --loglevel=info
+```

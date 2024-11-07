@@ -2,7 +2,7 @@
 name = "demo"
 version = "0.1.0"
 description = ""
-authors = ["Aditya Kumar <adityakumar_me20a8_36@dtu.ac.in>"]
+authors = ["Yashwant Raj"]
 readme = "README.md"
 
 [tool.poetry.dependencies]

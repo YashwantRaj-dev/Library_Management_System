@@ -16,10 +16,6 @@
         <h2>Librarian</h2>
         <router-link to="/librarian-login"><button>Librarian Login</button></router-link>
       </div>
-      <div class="option">
-        <h2>Admin</h2>
-        <router-link to="/admin-login"><button>Admin Login</button></router-link>
-      </div>
     </div>
   </div>
 </template>
@@ -38,6 +34,7 @@ export default {
 
 .user-options, .admin-options {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   margin-top: 20px;
 }

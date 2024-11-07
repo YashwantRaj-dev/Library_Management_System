@@ -8,6 +8,7 @@
         <input type="password" v-model="confirmPassword" placeholder="Confirm Password" required>
         <button type="submit">Sign Up</button>
       </form>
+      <button @click="$router.go(-1)" style="background-color: lightgreen; color: white;">Go Back</button>
     </div>
   </template>
   

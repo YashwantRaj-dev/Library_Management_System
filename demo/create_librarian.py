@@ -2,9 +2,9 @@ from config import db, app
 from models.user import User, Librarian
 
 def create_librarian():
-    username = "librarian"
+    username = "lib"
     email = "librarian@example.com"
-    password = "librarianpassword"
+    password = "libpass"
     role = "librarian"
 
     # Check if the librarian already exists
