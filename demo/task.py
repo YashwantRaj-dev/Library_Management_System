@@ -18,49 +18,6 @@ app = Celery('task', broker = 'redis://127.0.0.1:6379')
 app.conf.enable_utc = False 
 app.conf.timezone = 'Asia/Kolkata'
 
-# @app.on_after_configure.connect 
-# def setup_periodic_tasks(sender, **kwargs):
-#     sender.add_periodic_task(10.0,add.s(2,4), name = "Add every 10") 
-#     sender.add_periodic_task(
-#         crontab(hour=17, minute=43),
-#         test.s('Happy Happy')
-#     )
-#     sender.add_periodic_task(
-#         crontab(hour=2, minute=00),
-#         send_email.s("yashwantraj159@gmail.com","rajyashwant0641@gmail.com","Flask","Tertiary")
-#     )
-
-# @app.task 
-# def add(x,y):
-#     return x+y 
-
-# @app.task 
-# def test(msg):
-#     print(msg) 
-    
-# @app.task    
-# def send_email(sender,receiver,subject,message):
-#     msg = MIMEMultipart()
-#     msg['From'] = sender
-#     msg['To'] = receiver
-#     msg['Subject'] = subject
-#     msg.attach(MIMEText(message))
-#     # filename = attachment
-#     # path = os.path.join(os.getcwd(),filename)
-#     # with open(path,'rb') as f:
-#     #     attachment = MIMEApplication(f.read(),_subtype='pdf')
-#     #     attachment.add_header('Content-Disposition','attachment',filename=filename)
-#     #     msg.attach(attachment)
-#     smtp_server = 'smtp.gmail.com'
-#     smtp_port = 587
-#     smtp_username = 'yashwantraj159@gmail.com'
-#     smtp_password = 'vzfvpliksmonadwu'
-
-#     with smtplib.SMTP(smtp_server,smtp_port) as server:
-#         server.starttls()
-#         server.login(smtp_username,smtp_password)
-#         server.sendmail(sender,receiver,msg.as_string())
-
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
     sender.add_periodic_task(
